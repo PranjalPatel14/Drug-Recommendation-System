@@ -38,21 +38,80 @@ def predict():
         # Get symptoms from the form
         # The form sends a list of symptom names that were checked
         selected_symptoms = request.form.getlist('symptoms')
+        
+        # Validate that at least one symptom is selected
+        if not selected_symptoms:
+            return render_template('result.html',
+                                   disease="Error",
+                                   description="Please select at least one symptom to get a prediction.",
+                                   precautions=[],
+                                   medications=[],
+                                   specialist="General Physician")
 
         # Create the input vector (132 zeros)
         input_vector = np.zeros(len(symptom_columns))
 
         # Set the corresponding indices to 1 for selected symptoms
+        matched_symptoms = []
         for symptom in selected_symptoms:
             if symptom in symptom_columns:
                 index = symptom_columns.index(symptom)
                 input_vector[index] = 1
+                matched_symptoms.append(symptom)
+        
+        # Check if any symptoms matched
+        if len(matched_symptoms) == 0:
+            return render_template('result.html',
+                                   disease="Error",
+                                   description="No valid symptoms were found. Please select symptoms from the list.",
+                                   precautions=[],
+                                   medications=[],
+                                   specialist="General Physician")
 
-        # Reshape the vector to be 2D (1 row, 132 columns) for the model
-        input_vector = [input_vector]
+        # Convert to numpy array and reshape to 2D (1 row, N columns) for the model
+        # Use DataFrame format to match training data structure and avoid warnings
+        input_df = pd.DataFrame([input_vector], columns=symptom_columns)
 
         # Make the prediction
-        predicted_disease = model.predict(input_vector)[0]
+        predicted_disease = model.predict(input_df)[0]
+        
+        # Get prediction probabilities to find the best valid prediction
+        probabilities = model.predict_proba(input_df)[0]
+        disease_classes = model.classes_
+        
+        # Validate prediction: check if predicted disease actually has the selected symptoms
+        predicted_row = df_train[df_train['prognosis'] == predicted_disease]
+        is_valid = False
+        if len(predicted_row) > 0:
+            # Check if any case of this disease has all selected symptoms
+            for idx, row in predicted_row.iterrows():
+                symptom_values = row[symptom_columns].values
+                if np.array_equal((symptom_values > 0), (input_vector > 0)):
+                    is_valid = True
+                    break
+        
+        # If prediction is invalid, find the best valid prediction from top probabilities
+        if not is_valid:
+            # Get top predictions sorted by probability
+            top_predictions = sorted(zip(probabilities, disease_classes), reverse=True)
+            
+            for prob, disease in top_predictions:
+                # Check if this disease has the selected symptoms in training data
+                disease_rows = df_train[df_train['prognosis'] == disease]
+                for idx, row in disease_rows.iterrows():
+                    row_symptoms = row[symptom_columns].values
+                    # Check if at least one selected symptom matches
+                    if any((row_symptoms > 0) & (input_vector > 0)):
+                        predicted_disease = disease
+                        is_valid = True
+                        break
+                if is_valid:
+                    break
+        
+        # Debug information (can be removed in production)
+        print(f"Selected symptoms: {matched_symptoms[:5]}...")  # Print first 5
+        print(f"Predicted disease: {predicted_disease}")
+        print(f"Prediction valid: {is_valid}")
 
         # --- Get Content for the Predicted Disease ---
 
