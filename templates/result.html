@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Result</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .result-box { 
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        h1 { 
+            color: #D9534F;
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        h2 { 
+            color: #667eea;
+            font-size: 20px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 10px 0;
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .back-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .disease-name {
+            text-transform: capitalize;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="result-box">
+            <h1>🎯 Predicted Disease: <span class="disease-name">{{ disease }}</span></h1>
+            
+            <h2>📋 Description</h2>
+            <p>{{ description }}</p>
+            
+            <h2>⚠️ Recommended Precautions</h2>
+            <ul>
+                {% for precaution in precautions %}
+                <li>{{ precaution }}</li>
+                {% endfor %}
+            </ul>
+            
+            <h2>💊 Recommended Medications</h2>
+            <ul>
+                {% for medication in medications %}
+                <li>{{ medication }}</li>
+                {% endfor %}
+            </ul>
+            
+            <h2>👨‍⚕️ Recommended Specialist</h2>
+            <p style="font-size: 18px; font-weight: bold; color: #667eea;">
+                {{ specialist }}
+            </p>
+        </div>
+
+        <a href="/" class="back-btn">← Go Back to Home Page</a>
+    </div>
+
+</body>
+</html>
