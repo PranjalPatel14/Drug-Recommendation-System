@@ -2,6 +2,7 @@ import pandas as pd
 import joblib
 from flask import Flask, render_template, request
 import numpy as np
+import os
 
 # 1. Initialize your Flask app
 app = Flask(__name__)
@@ -94,4 +95,7 @@ def predict():
 
 # 6. Run the app
 if __name__ == '__main__':
-    app.run(debug=True) # debug=True makes it auto-reload when you save
+    # Use environment variable for debug mode, default to False for production
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)
